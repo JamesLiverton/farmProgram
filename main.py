@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 import sqlite3
 from datetime import date
+from functools import partial
 
 class Database():
     def __init__(self): # creates a connection with the database
@@ -17,23 +18,23 @@ class Database():
         location = []
 
         sql = '''SELECT * FROM machines'''
-        self.cur.execute(sql)
+        self.cur.execute(sql) # runs the query
         rows = self.cur.fetchall()
 
         return [rows] # allows for all of the database to be stored in one variable
 
-    def add_machine(self, data):
+    def add_machine(self, data): # data variable must be a tuple. Example: data = ('PLL123','hedgecutter','19/04/2021', '27/04/2021', 'Felixstowe')
         sql = '''INSERT INTO machines(id, machineName, RentStartDate, ReturnDate, Location)
         VALUES (?,?,?,?,?);'''
-        self.cur.execute(sql, data)
-        self.conn.commit()
+        self.cur.execute(sql, data) # replaces the '?' in sql with the information in the data variable and then runs the query
+        self.conn.commit() # saves the changes to the database
     
     def location_change(self,data):
         sql = '''UPDATE machines
             SET Location = ?
             WHERE id = ?;'''
-        self.cur.execute(sql, data)
-        self.conn.commit() 
+        self.cur.execute(sql, data) # replaces the '?' in sql with the information in the data variable and then runs the query
+        self.conn.commit() #saves the changes to the database
 
 db = Database()
 #db.add_machine(('PLL126','hedgecutter','1/04/2021','7/04/2021','Felixstowe'))
@@ -42,7 +43,7 @@ db = Database()
 data = db.fetch_data()
 today = date.today()
 for d in data:
-    for count, entity in enumerate(d):
+    for entity in d:
         temp = entity[3]
         temp = temp.split('/')
 
@@ -53,9 +54,10 @@ for d in data:
 
 
 def main_window():
-    tk = Tk()
+    tk = Tk() # intitailizes the window
     canvas = Canvas(tk, width='150', height='300')#to hold image
-    canvas.grid(row=0,column=0)
+    canvas.pack()
+    canvas.place(x=0, y=0)
 
     
 
@@ -63,7 +65,9 @@ def main_window():
     tk.wm_iconbitmap('assets/favicon.ico')#sets logo of the window - must use .ico files
     tk.title("James Super Duper program he made himself for Tracey x")
 
-    Button(tk, text='Tractor 1', command=tractor1_window).grid(row=0, column=1) #button to open machine 
+    #------------------TEMPORARY UNTIL TABLE IS FULLY FUNCTIONING ---------
+    #Button(tk, text='Tractor 1', command=tractor1_window).grid(row=0, column=1) #button to open machine 
+    #--------------------------------------------------------------------
 
     #logo
     img = PhotoImage(file="assets/pllLogo.png") #loads image and assigns it to variable to make usable
@@ -74,11 +78,11 @@ def main_window():
     tree['columns']=('id','machineName','RentStartDate','ReturnDate','Location') #creates names of columns
     tree['show'] = 'headings' 
 
-    tree.column("id", width=150)
-    tree.column("machineName", width=200)
-    tree.column("RentStartDate", width=150)
-    tree.column("ReturnDate", width=150)
-    tree.column("Location", width=100)
+    tree.column("id", width=250)
+    tree.column("machineName", width=400)
+    tree.column("RentStartDate", width=300)
+    tree.column("ReturnDate", width=300)
+    tree.column("Location", width=150)
     
     tree.heading("id", text="Machine Identification", anchor=W)
     tree.heading("machineName", text="Machine Name")
@@ -92,13 +96,17 @@ def main_window():
         for entity in d:
             tree.insert('','end',values=[entity[0],entity[1],entity[2],entity[3],entity[4]])
 
-    tree.grid(row=1, column=1)
+    tree.bind("<Double-1>", partial(on_press, tree))
+
+    tree.pack()
+    tree.place(relx=0.5, rely=0.5, anchor=CENTER)
     
     tk.mainloop()
 
-def tractor1_window():
-    tk = Tk()
-    tk.title('Tractor1Window')
+def on_press(tree, event):
+    item = tree.selection()
+    for i in item:
+        print("you clicked on", tree.item(i, "values"))
 
 
 main_window()
