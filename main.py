@@ -11,12 +11,6 @@ class Database():
         self.cur = self.conn.cursor()
 
     def fetch_data(self):
-        ids = []
-        names = []
-        startdates = []
-        returndates = []
-        location = []
-
         sql = '''SELECT * FROM machines'''
         self.cur.execute(sql) # runs the query
         rows = self.cur.fetchall()
@@ -106,7 +100,11 @@ def main_window():
 def on_press(tree, event):
     item = tree.selection()
     for i in item:
-        print("you clicked on", tree.item(i, "values"))
+        selected = tree.item(i, "values")
+    
+    tk = Tk()
+    tk.title(selected[0]+' '+selected[1])
+    tk.geometry('1500x1000')
 
 
 main_window()
