@@ -1,3 +1,13 @@
+'''
+REMEMBER TO git pull BEFORE MAKING CHANGES LOCALLY
+
+TO ADD TO GITHUB
+
+ - git add .
+ - git commit -m "your message here"
+ - git push OR git push origin main
+
+'''
 from tkinter import *
 from tkinter.ttk import *
 import sqlite3
