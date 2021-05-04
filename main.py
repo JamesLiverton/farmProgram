@@ -11,7 +11,7 @@ TO ADD TO GITHUB
 from tkinter import *
 from tkinter.ttk import *
 import sqlite3
-from datetime import date
+from datetime import datetime
 from functools import partial
 from PIL import Image, ImageTk
 import ctypes
@@ -50,16 +50,16 @@ db = Database()
 
 
 data = db.fetch_data()
-today = date.today()
+today = datetime.now()
 for d in data:
     for entity in d:
+
         temp = entity[3]
         temp = temp.split('/')
+        temp = datetime(int(temp[2]), int(temp[1]), int(temp[0]))
+        if temp < today:
+            db.location_change(('Yard', entity[0]))
 
-        if int(temp[2]) <= today.year:
-            if int(temp[1]) <= today.month:
-                if int(temp[0]) <= today.day:
-                    db.location_change(("Yard", entity[0]))
 
 
 def main_window():
