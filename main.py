@@ -15,6 +15,7 @@ from datetime import datetime
 from functools import partial
 from PIL import Image, ImageTk
 import ctypes
+from tkcalendar import *
 user32 = ctypes.windll.user32
 x, y = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 
@@ -131,6 +132,20 @@ def on_press(tree, event):
     tk = Tk()
     tk.title(selected[0]+' '+selected[1])
     tk.geometry('1500x1000')
+
+    cal = Calendar(tk, selectmode='day')
+    date = cal.datetime.today() + cal.timedelta(days=2)
+    cal.calevent_create(date, 'Hello World', 'message')
+    cal.calevent_create(date, 'Reminder 2', 'reminder')
+    cal.calevent_create(date + cal.timedelta(days=-2), 'Reminder 1', 'reminder')
+    cal.calevent_create(date + cal.timedelta(days=3), 'Message', 'message')
+
+    cal.tag_config('reminder', background='red', foreground='yellow')
+
+    cal.pack(fill="both", expand=True)
+    tk.Label(tk, text="Hover over the events.").pack()
+
+    tk.mainloop()
 
 
 main_window()
