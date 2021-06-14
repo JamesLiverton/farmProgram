@@ -45,21 +45,66 @@ class Database():
             WHERE id = ?;'''
         self.cur.execute(sql, data) # replaces the '?' in sql with the information in the data variable and then runs the query
         self.conn.commit() #saves the changes to the database
+    def date_update(self): # this method is only for the auto change of the dates for each machine.
+        data = self.fetch_data()
+        today = datetime.now()
+        for d in data:
+            for entity in d:
+                mid = entity[0]
+                nexthires = entity[5]
+                rentstartdate = entity[2]
+                if nexthires:
+                    if rentstartdate != '-':
+                        listofhires = nexthires.split(',')
+                        nexthire = listofhires.pop(0)
+                        location, rsd, rd = nexthire.split('-')
+                        startdate = datetime(int(rsd.split('/')[2]),int(rsd.split('/')[1]),int(rsd.split('/')[0]))
+                        if not((startdate - today).days <= 0):
+                            listofhires.insert(0,nexthire)
+                            location = 'Yard'
+                            rsd = '-'
+                            rd = '-'
+                            nh = ','.join(listofhires)
+                        values = (rsd, rd, location, nh, mid)
+                        sql = '''UPDATE machines
+                                SET RentStartDate = ?, ReturnDate = ?, Location = ?, NextHires = ?
+                                WHERE id = ?'''
+                        self.cur.execute(sql, values)
+                        self.conn.commit()
+                elif (not nexthires) and rentstartdate != '-':
+                    temp = entity[3].split('/')
+                    temp = datetime(int(temp[2]), int(temp[1]), int(temp[0]))
+                    if temp < today:
+                        location = 'Yard'
+                        rsd = '-'
+                        rd = '-'
+                        values = (rsd, rd, location, mid)
+                        sql = '''UPDATE machines
+                                SET RentStartDate = ?, ReturnDate = ?, Location = ?
+                                WHERE id = ?'''
+                        self.cur.execute(sql, values)
+                        self.conn.commit()
 
+                        
 db = Database()
 #db.add_machine(('PLL126','hedgecutter','1/04/2021','7/04/2021','Felixstowe'))
 
+db.date_update()
 
 data = db.fetch_data()
 today = datetime.now()
 for d in data:
+    print('running')
     for entity in d:
-
+        print(entity)
         temp = entity[3]
+        if temp == '-':
+            break
         temp = temp.split('/')
         temp = datetime(int(temp[2]), int(temp[1]), int(temp[0]))
         if temp < today:
             db.location_change(('Yard', entity[0]))
+
 
 
 
@@ -73,10 +118,6 @@ def main_window():
     tk.state('zoomed')
     tk.wm_iconbitmap('assets/favicon.ico')#sets logo of the window - must use .ico files
     tk.title("James Super Duper program he made himself for Tracey x")
-
-    #------------------TEMPORARY UNTIL TABLE IS FULLY FUNCTIONING ---------
-    #Button(tk, text='Tractor 1', command=tractor1_window).grid(row=0, column=1) #button to open machine 
-    #--------------------------------------------------------------------
 
     #logo
     img = PhotoImage(file="assets/pllLogo.png") #loads image and assigns it to variable to make usable
