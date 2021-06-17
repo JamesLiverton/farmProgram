@@ -1,4 +1,4 @@
-'''from tkcalendar import Calendar
+from tkcalendar import Calendar
 import tkinter as tk
 from datetime import datetime
 
@@ -18,7 +18,4 @@ cal.tag_config('reminder', background='red', foreground='yellow')
 cal.pack(fill="both", expand=True)
 tk.Label(top, text="Hover over the events.").pack()
 
-tk.mainloop()'''
-
-if True:
-    print('1')
+tk.mainloop()

@@ -85,6 +85,13 @@ class Database():
                         self.cur.execute(sql, values)
                         self.conn.commit()
 
+    def fetch_hires(self, machineName):
+        sql = '''SELECT RentStartDate, ReturnDate, NextHires FROM Machines WHERE id = ?;'''
+        self.cur.execute(sql, (machineName,))
+        data = self.cur.fetchall()
+
+        return data
+
                         
 db = Database()
 #db.add_machine(('PLL126','hedgecutter','1/04/2021','7/04/2021','Felixstowe'))
@@ -170,21 +177,81 @@ def on_press(tree, event):
     for i in item:
         selected = tree.item(i, "values")
     
+
     tk = Tk()
     tk.title(selected[0]+' '+selected[1])
     tk.geometry('1500x1000')
 
-    cal = Calendar(tk, selectmode='day')
-    date = cal.datetime.today() + cal.timedelta(days=2)
-    cal.calevent_create(date, 'Hello World', 'message')
-    cal.calevent_create(date, 'Reminder 2', 'reminder')
-    cal.calevent_create(date + cal.timedelta(days=-2), 'Reminder 1', 'reminder')
-    cal.calevent_create(date + cal.timedelta(days=3), 'Message', 'message')
+    cframe = Frame(tk, height=800, width=800)
+    cframe.pack()
 
-    cal.tag_config('reminder', background='red', foreground='yellow')
+    cal = Calendar(cframe, selectmode='day')
+
 
     cal.pack(fill="both", expand=True)
-    tk.Label(tk, text="Hover over the events.").pack()
+
+    #getting hires for current machine
+    print('selectd', selected[0])
+    machineName = selected[0]
+    data = db.fetch_hires(machineName)
+    print('data', data)
+    data = data[0]
+    s = data[0]
+    e = data[1]
+    nh = data[2]
+
+    nh = nh.split(',')
+    for i in range(len(nh)):
+        print(nh[i])
+        nh[i] = nh[i].split('-')
+        location = nh[i].pop(0)
+
+        for j in range(len(nh[i])):
+            nh[i][j] = datetime(int(nh[i][j].split('/')[2]), int(nh[i][j].split('/')[1]), int(nh[i][j].split('/')[0]))
+
+        currentday = nh[i][0].day
+        currentmonth = nh[i][0].month
+        currentyear = nh[i][0].year
+
+        endday = nh[i][1].day
+        endmonth = nh[i][1].month
+        endyear = nh[i][1].year
+
+        while True:
+            print(currentday, currentmonth, currentyear)
+            cal.calevent_create(datetime(currentyear, currentmonth, currentday), location, 'hired')
+            
+            if currentmonth == 12 and currentday == 31:
+                currentyear += 1
+                currentday = 1
+                currentmonth = 1
+
+            elif currentmonth == 3 and currentday == 28:
+                currentmonth += 1
+                currentday = 1
+
+            elif currentmonth % 2 == 0 and currentday == 31:
+                currentmonth += 1
+                currentday = 1
+
+            elif currentmonth % 2 != 0 and currentday == 30:
+                currentmonth += 1
+                currentday = 1
+
+            else:
+                currentday += 1
+
+            if currentmonth == 14:
+                break
+            if currentday == endday and currentmonth == endmonth and currentyear == endyear:
+                cal.calevent_create(datetime(currentyear, currentmonth, currentday), location, 'hired')
+
+                break
+        cal.tag_config('hired', background='red')
+
+
+
+    #---------------------------------------
 
     tk.mainloop()
 
